@@ -89,3 +89,4 @@ inline std::string MakeFrame(MessageType type, const std::string& payload) {
   return frame;
 }
 
+#endif
