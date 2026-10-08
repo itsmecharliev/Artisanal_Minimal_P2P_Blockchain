@@ -1,21 +1,22 @@
-Dependencies needed:
+### Dependencies needed:
 g++, make
 
-one liner compile for Linux
+### one liner compile for Linux:
 g++ -std=c++17 -pthread -O2 -Wall -Wextra main.cpp core/*.cpp cryptography/*.cpp network/*.cpp -o TestChain
 
-one liner compile for mac
+### one liner compile for mac:
 clang++ -std=c++17 -pthread -O2 -Wall -Wextra main.cpp core/*.cpp cryptography/*.cpp network/*.cpp -o TestChain
 
+### How to Run:
+./TestChain <my_p2p_port> <peer_ip> <peer_p2p_port>
 
-How to Run: "./TestChain <my_p2p_port> <peer_ip> <peer_p2p_port>"
-# Laptop A
+### Laptop A
 ./TestChain 6001 192.168.1.11 6001
 
-# Laptop B
+### Laptop B
 ./TestChain 6001 192.168.1.10 6001
 
-## References
+# References
 The initial creation of this code started off as a tutorial by Dave Nash
 in his [BUILD A BLOCKCHAIN WITH C++](https://davenash.com/2017/10/build-a-blockchain-with-c/) tutorial.
 
