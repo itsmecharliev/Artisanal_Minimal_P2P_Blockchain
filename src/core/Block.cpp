@@ -8,10 +8,6 @@ Block::Block(uint32_t indexIn, const string &dataIn) : Index(indexIn), Data(data
   Time = time(nullptr);
 }
 
-string Block::GetHash() const {
-  return Hash;
-}
-
 void Block::MineBlock(uint32_t difficulty) {
   string str(difficulty, '0');  // Create string of length difficulty with char '0'
 

@@ -45,7 +45,7 @@ inline std::string SerializeBlock(const Block& block) {
       <<  block.GetData()   <<  '|'
       <<  block.GetHash();
 
-  return oss.str()
+  return oss.str();
 }
 
 inline Block DeserializeBlock(const std::string& payload) {

@@ -75,7 +75,7 @@ void P2PServer::ListenLoop() {
   addr.sin_port = htons(ListenPort);  // byte ordering
 
   // bind
-  if (bind(ListenFd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
+  if (::bind(ListenFd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
     cerr << "p2p port bind fail "
       << ListenPort << ": " << strerror(errno) << endl;
 
@@ -109,14 +109,14 @@ void P2PServer::ListenLoop() {
       if (!Running.load()) break;
       continue;
     }
+
+    // register connection
+    AddPeer(fd);
+    cout << "p2p inbound peer from: " << inet_ntoa(peerAddr.sin_addr) << endl;
+
+    // hand off detached worker
+    thread([this, fd] { HandleConnection(fd); }).detach();
   }
-
-  // register connection
-  AddPeer(fd);
-  cout << "p2p inbound peer from: " << inet_ntoa(peerAddr.sin_addr) << "\n";
-
-  // hand off detached worker
-  thread([this, fd] { HandleConnection(fd); }).detach();
 }
 
 bool P2PServer::DialPeer(const string& ip, uint16_t port) {
@@ -146,7 +146,7 @@ bool P2PServer::DialPeer(const string& ip, uint16_t port) {
   cout << "p2p outbound peer " << ip << ":" << port << "\n";
 
   // sync chain on connect
-  SendFrame(fd, MakeFrame(MessageType::RequestChain, ""));
+  SendFrame(fd, MakeFrame(MessageType::GetBlocks, ""));
 
   // hand off detached worker
   thread([this, fd] { HandleConnection(fd); }).detach();
@@ -160,7 +160,7 @@ void P2PServer::BroadcastNewBlock(const Block& block) {
 
 // broadcast to pull missing blocks
 void P2PServer::BroadcastMissingBlocksRequest() {
-  BroadcastFrame(MakeFrame(MessageType::RequestChain, ""));
+  BroadcastFrame(MakeFrame(MessageType::GetBlocks, ""));
 }
 
 // send a frame to one peer
@@ -207,12 +207,12 @@ void P2PServer::HandleConnection(int fd) {
       buffer.erase(0, pos + 1); // clear buffer
       if (!frame.empty()) ProcessFrame(fd, frame);  // skip blanks ie double newline
     }
-
-    // close connection
-    Remove(fd);
-    close(fd);
-    cout << "p2p peer disconnected (fd " << fd << ")" << endl;
   }
+
+  // close connection
+  RemovePeer(fd);
+  close(fd);
+  cout << "p2p peer disconnected (fd " << fd << ")" << endl;
 }
 
 void P2PServer::ProcessFrame(int fd, const string& frame) {
@@ -220,27 +220,36 @@ void P2PServer::ProcessFrame(int fd, const string& frame) {
   MessageType type = static_cast<MessageType>(frame[0]);
   string payload = frame.substr(1);
 
-  switch (switch_on) {
+  switch (type) {
     // peer push block to us
     case MessageType::NewBlock: {
       Block block = DeserializeBlock(payload);
-      cout << "p2p ";
-      if (Chain.TryAddExternalBlock(block)) cout << "accepted ";
-      else cout << "rejected ";
-      cout << "block " << block.GetIndex() << endl;
+      if (Chain.TryAddExternalBlock(block)) {
+        auto snapshot = Chain.Snapshot();
+
+        // silence duplicate rejection noise
+        if (block.GetIndex() <= snapshot.back.GetIndex()) break;
+
+        cout << "p2p accepted block " << block.GetIndex() << endl;
+        cout << "chain now: " << snapshot.size() << " blocks, tip "
+             << snapshot.back.().GetHash().substr(0, 16) << "..." << endl;
+      }
+      /* NEED TO FIGURE OUT HOW TO DISPLAY NON-DUPLICATE FRAME REJECTION */
+      //else cout << "p2p rejected block " << block.GetIndex() << endl;
+
       break;
     }
     // peer request our chain
-    case MessageType::RequestChain: {
-      auto snapshot = Chain.snapshot();
+    case MessageType::GetBlocks: {
+      auto snapshot = Chain.Snapshot();
       for (const auto& block : snapshot) {
-        string frame = MakeFrame(MessageType::ChainResponse, SerializeBlock(block));
+        string frame = MakeFrame(MessageType::Block, SerializeBlock(block));
         SendFrame(fd, frame);
       }
       break;
     }
     // peer send us one block in response to our request
-    case MessageType::ChainResponse: {
+    case MessageType::Block: {
       Block block = DeserializeBlock(payload);
       if (Chain.TryAddExternalBlock(block)) {
         cout << "p2p synced block " << block.GetIndex() << " from peer" << endl;
