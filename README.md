@@ -1,11 +1,21 @@
+# CSCI 490 Capstone: Yosegi Chain
+A minimal peer-to-peer blockchain implemented in C++17.
+This program is designed to demonstrate cross-host block propagation and chain synchronization over a real network.
+
+The name is based on yosegi-zaiku, a Japanese mosaic woodwork technique developed in Hakone, Japan during the Edo period. The technique utilzes the natural colors of various trees to create complex patterns.
+
+# How to compile and run:
+This program is currently primarily supporting Linux only.
 ### Dependencies needed:
 g++, make
-
-### one liner compile for Linux:
-g++ -std=c++17 -pthread -O2 -Wall -Wextra main.cpp core/*.cpp cryptography/*.cpp network/*.cpp -o TestChain
-
-### one liner compile for mac:
-clang++ -std=c++17 -pthread -O2 -Wall -Wextra main.cpp core/*.cpp cryptography/*.cpp network/*.cpp -o TestChain
+## To make:
+Make sure your current directory is inside the 'src/' folder.
+```cd src/```
+### Makefile
+Make sure you have the 'make' dependency.
+Run ```make```
+## One liner compile without make:
+```g++ -std=c++17 -pthread -O2 -Wall -Wextra main.cpp core/*.cpp cryptography/*.cpp network/*.cpp -o TestChain```
 
 ### How to Run:
 ./TestChain <my_p2p_port> <peer_ip> <peer_p2p_port>
