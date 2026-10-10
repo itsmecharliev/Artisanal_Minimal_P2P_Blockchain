@@ -14,7 +14,7 @@ Make sure your current directory is inside the 'src/' folder.
 ### Makefile
 Make sure you have the 'make' dependency.
 Run ```make```
-## One liner compile without make:
+### One liner compile without 'make':
 ```g++ -std=c++17 -pthread -O2 -Wall -Wextra main.cpp core/*.cpp cryptography/*.cpp network/*.cpp -o TestChain```
 
 ### How to Run:
@@ -27,7 +27,7 @@ Run ```make```
 ./TestChain 6001 192.168.1.10 6001
 
 # References
-The initial creation of this code started off as a tutorial by Dave Nash
+1. The initial creation of this code started off as a tutorial by Dave Nash
 in his [BUILD A BLOCKCHAIN WITH C++](https://davenash.com/2017/10/build-a-blockchain-with-c/) tutorial.
 
-The [SHA256](https://www.zedwood.com/article/cpp-sha256-function) function that I imported is from zedwood.
+2. The [SHA256](https://www.zedwood.com/article/cpp-sha256-function) function that I imported is from zedwood.

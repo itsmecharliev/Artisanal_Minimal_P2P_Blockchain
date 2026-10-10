@@ -232,7 +232,7 @@ void P2PServer::ProcessFrame(int fd, const string& frame) {
 
         cout << "p2p accepted block " << block.GetIndex() << endl;
         cout << "chain now: " << snapshot.size() << " blocks, tip "
-             << snapshot.back.().GetHash().substr(0, 16) << "..." << endl;
+             << snapshot.back().GetHash().substr(0, 16) << "..." << endl;
       }
       /* NEED TO FIGURE OUT HOW TO DISPLAY NON-DUPLICATE FRAME REJECTION */
       //else cout << "p2p rejected block " << block.GetIndex() << endl;
